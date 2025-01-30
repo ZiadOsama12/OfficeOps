@@ -25,7 +25,7 @@ namespace Repository
         RepositoryContext.Set<T>()
         .Where(expression);
         public void Create(T entity) => RepositoryContext.Set<T>().Add(entity);
-        public void Update(T entity) => RepositoryContext.Set<T>().Update(entity);
+        public void Update(T entity) => RepositoryContext.Set<T>().Update(entity); // for disconnected update "Another Context"
         public void Delete(T entity) => RepositoryContext.Set<T>().Remove(entity);
     }
 }

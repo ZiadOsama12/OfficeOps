@@ -23,6 +23,7 @@ namespace Ultimate_WebAPI.Extensions
                         context.Response.StatusCode = contextFeature.Error switch 
                         {
                             NotFoundException => StatusCodes.Status404NotFound,
+                            BadRequestException => StatusCodes.Status400BadRequest,
                             _ => StatusCodes.Status500InternalServerError
                         };
                         logger.LogError($"Something went wrong: {contextFeature.Error}");

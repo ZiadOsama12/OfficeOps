@@ -1,12 +1,22 @@
 using Contracts;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.Extensions.Options;
 using NLog;
 using System.Reflection.Metadata;
 using Ultimate_WebAPI.Extensions;
 
+
 namespace Ultimate_WebAPI;
 public class Program
 {
+    public static NewtonsoftJsonPatchInputFormatter GetJsonPatchInputFormatter() =>
+        new ServiceCollection().AddLogging().AddMvc().AddNewtonsoftJson()
+        .Services.BuildServiceProvider()
+        .GetRequiredService<IOptions<MvcOptions>>().Value.InputFormatters
+        .OfType<NewtonsoftJsonPatchInputFormatter>().First();
+
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
@@ -22,12 +32,18 @@ public class Program
         builder.Services.ConfigureSqlContext(builder.Configuration);
         builder.Services.AddAutoMapper(typeof(Program));
 
+        builder.Services.Configure<ApiBehaviorOptions>(options =>
+        {
+            options.SuppressModelStateInvalidFilter = true;
+        });
+
         builder.Services.AddControllers(config =>
         {
             config.RespectBrowserAcceptHeader = true;
             config.ReturnHttpNotAcceptable = true;
+            config.InputFormatters.Insert(0, GetJsonPatchInputFormatter()); //The default input formatters might not support JSON Patch, so we explicitly insert it at index 0, ensuring it takes priority.
 
-        }).AddXmlDataContractSerializerFormatters()
+        }).AddXmlDataContractSerializerFormatters().AddCustomCSVFormatter()
         .AddApplicationPart(typeof(CompanyEmployees.Presentation.AssemblyReference).Assembly);
 
         var app = builder.Build();
