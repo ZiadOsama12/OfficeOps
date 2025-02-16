@@ -1,3 +1,4 @@
+using CompanyEmployees.Presentation.ActionFilters;
 using Contracts;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
@@ -36,6 +37,8 @@ public class Program
         {
             options.SuppressModelStateInvalidFilter = true;
         });
+
+        builder.Services.AddScoped<ValidationFilterAttribute>();
 
         builder.Services.AddControllers(config =>
         {
