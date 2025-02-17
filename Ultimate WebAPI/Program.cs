@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Options;
 using NLog;
+using Service.DataShaping;
+using Shared.DataTransferObjects;
 using System.Reflection.Metadata;
 using Ultimate_WebAPI.Extensions;
 
@@ -32,6 +34,8 @@ public class Program
         builder.Services.ConfigureServiceManager(); // added
         builder.Services.ConfigureSqlContext(builder.Configuration);
         builder.Services.AddAutoMapper(typeof(Program));
+        builder.Services.AddCustomMediaTypes();
+        builder.Services.ConfigureVersioning();
 
         builder.Services.Configure<ApiBehaviorOptions>(options =>
         {
@@ -39,13 +43,15 @@ public class Program
         });
 
         builder.Services.AddScoped<ValidationFilterAttribute>();
+        builder.Services.AddScoped<IDataShaper<EmployeeDto>, DataShaper<EmployeeDto>>();
+        builder.Services.AddScoped<ValidateMediaTypeAttribute>();
 
         builder.Services.AddControllers(config =>
         {
             config.RespectBrowserAcceptHeader = true;
             config.ReturnHttpNotAcceptable = true;
             config.InputFormatters.Insert(0, GetJsonPatchInputFormatter()); //The default input formatters might not support JSON Patch, so we explicitly insert it at index 0, ensuring it takes priority.
-
+           
         }).AddXmlDataContractSerializerFormatters().AddCustomCSVFormatter()
         .AddApplicationPart(typeof(CompanyEmployees.Presentation.AssemblyReference).Assembly);
 

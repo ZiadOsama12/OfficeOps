@@ -1,6 +1,9 @@
-﻿using CompanyEmployees.Presentation.ActionFilters;
+﻿using Asp.Versioning;
+using CompanyEmployees.Presentation.ActionFilters;
 using CompanyEmployees.Presentation.ModelBinders;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Service.Contracts;
 using Shared.DataTransferObjects;
 using System;
@@ -11,12 +14,24 @@ using System.Threading.Tasks;
 
 namespace CompanyEmployees.Presentation.Controllers
 {
+    //[Route("api/{v:apiversion}/companies")] // instead of query param and header
     [Route("api/companies")]
     [ApiController]
+    [ApiVersion("1.0")]
+
     public class CompaniesController : ControllerBase
     {
+
+
         private readonly IServiceManager _service;
         public CompaniesController(IServiceManager service) => _service = service;
+
+        [HttpOptions]
+        public IActionResult GetCompaniesOptions()
+        {
+            Response.Headers.Add("Allow", "GET, OPTIONS, POST");
+            return Ok();
+        }
 
         [HttpGet]
         public async Task<IActionResult> GetCompanies()
@@ -37,7 +52,7 @@ namespace CompanyEmployees.Presentation.Controllers
         [ServiceFilter(typeof(ValidationFilterAttribute))]
         public async Task<IActionResult> CreateCompany([FromBody] CompanyForCreationDto company)
         {
-           
+
             var createdCompany = await _service.CompanyService.CreateCompanyAsync(company);
             return CreatedAtRoute("CompanyById", new { id = createdCompany.Id }, createdCompany);
         }

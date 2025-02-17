@@ -3,11 +3,11 @@ using Contracts;
 using Entities.Exceptions;
 using Entities.Models;
 using Service.Contracts;
-using Service.DataShaping;
 using Shared.DataTransferObjects;
 using Shared.RequestFeatures;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,8 +21,8 @@ namespace Service
         private readonly IMapper _mapper;
         private readonly IDataShaper<EmployeeDto> _dataShaper;
 
-        public EmployeeService(IRepositoryManager repository, ILoggerManager logger, IMapper mapper,
-            , IDataShaper<EmployeeDto> dataShaper)
+        public EmployeeService(IRepositoryManager repository, ILoggerManager logger,
+                IMapper mapper, IDataShaper<EmployeeDto> dataShaper)
         {
             _repository = repository;
             _logger = logger;
@@ -30,8 +30,8 @@ namespace Service
             _dataShaper = dataShaper;
 
         }
-        public async Task<(IEnumerable<EmployeeDto> employees, MetaData metaData)>
-            GetEmployeesAsync(Guid companyId, EmployeeParameters employeeParameters, bool trackChanges)
+        public async Task<(IEnumerable<ExpandoObject> employees, MetaData metaData)>
+               GetEmployeesAsync (Guid companyId, EmployeeParameters employeeParameters, bool trackChanges)
         {
             if (!employeeParameters.ValidAgeRange)
                 throw new MaxAgeRangeBadRequestException();
@@ -40,10 +40,14 @@ namespace Service
 
             var employeesWithMetaData = await _repository.Employee
                 .GetEmployeesAsync(companyId, employeeParameters, trackChanges);
+            
             var employeesDto =
             _mapper.Map<IEnumerable<EmployeeDto>>(employeesWithMetaData); // don't forget it's still a list
 
-            return (employees: employeesDto, metaData: employeesWithMetaData.MetaData);
+            var shapedData = _dataShaper.ShapeData(employeesDto,
+                    employeeParameters.Fields);
+
+            return (employees: shapedData, metaData: employeesWithMetaData.MetaData);
         }
         public async Task<EmployeeDto> GetEmployeeAsync(Guid companyId, Guid id, bool trackChanges)
         {

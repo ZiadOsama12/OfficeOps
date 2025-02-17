@@ -4,6 +4,10 @@ using Repository;
 using Service.Contracts;
 using Service;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc;
+using CompanyEmployees.Presentation;
+using Asp.Versioning;
 
 namespace Ultimate_WebAPI.Extensions
 {
@@ -18,7 +22,7 @@ namespace Ultimate_WebAPI.Extensions
                 .AllowAnyHeader()
                 .WithExposedHeaders("X-Pagination"));
 
-    });
+             });
         public static void ConfigureIISIntegration(this IServiceCollection services) =>
             services.Configure<IISOptions>(options =>
                 {
@@ -42,5 +46,44 @@ namespace Ultimate_WebAPI.Extensions
         public static IMvcBuilder AddCustomCSVFormatter(this IMvcBuilder builder) =>
             builder.AddMvcOptions(config => config.OutputFormatters.Add(new
             CsvOutputFormatter()));
+
+        public static void AddCustomMediaTypes(this IServiceCollection services)
+        {
+            services.Configure<MvcOptions>(config =>
+            {
+                var systemTextJsonOutputFormatter = config.OutputFormatters
+                .OfType<SystemTextJsonOutputFormatter>()?.FirstOrDefault();
+                if (systemTextJsonOutputFormatter != null)
+                {
+                    systemTextJsonOutputFormatter.SupportedMediaTypes
+                    .Add("application/vnd.codemaze.hateoas+json");
+                }
+                var xmlOutputFormatter = config.OutputFormatters
+                .OfType<XmlDataContractSerializerOutputFormatter>()?
+                .FirstOrDefault();
+                if (xmlOutputFormatter != null)
+                {
+                    xmlOutputFormatter.SupportedMediaTypes
+                    .Add("application/vnd.codemaze.hateoas+xml");
+                }
+            });
+        }
+        public static void ConfigureVersioning(this IServiceCollection services)
+        {
+            services.AddApiVersioning(opt =>
+            {
+                opt.AssumeDefaultVersionWhenUnspecified = true;
+                opt.DefaultApiVersion = new ApiVersion(1, 0); // ctor(major, minor)
+                opt.ReportApiVersions = true;
+                opt.ApiVersionReader = new HeaderApiVersionReader("api-version"); // choose between Header, Query Param, URL "in controller"
+                opt.ApiVersionReader = new QueryStringApiVersionReader("api-version");
+
+                //    opt.ApiVersionReader = ApiVersionReader.Combine(
+                //        new QueryStringApiVersionReader("api-version"),
+                //        new HeaderApiVersionReader("X-Version"),
+                //        new MediaTypeApiVersionReader("ver"));
+                //
+            }).AddMvc();
+        }
     }
 }

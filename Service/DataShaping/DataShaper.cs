@@ -13,7 +13,7 @@ namespace Service.DataShaping
     {
         public PropertyInfo[] Properties { get; set; }
         public DataShaper()
-        {
+        { // Default is "Returning all properties of T" 
             Properties = typeof(T).GetProperties(BindingFlags.Public |
                 BindingFlags.Instance);
         }
@@ -61,12 +61,12 @@ namespace Service.DataShaping
             return requiredProperties;
         }
 
-        private IEnumerable<ExpandoObject> FetchData(IEnumerable<T> entities,
+        private IEnumerable<ExpandoObject> FetchData(IEnumerable<T> entities, // multiple rows
     IEnumerable<PropertyInfo> requiredProperties)
         {
             var shapedData = new List<ExpandoObject>();
 
-            foreach (var entity in entities)
+            foreach (var entity in entities) // for each entity..make some object and add the properties "dynmaically" you need
             {
                 var shapedObject = FetchDataForEntity(entity, requiredProperties);
                 shapedData.Add(shapedObject);
@@ -75,8 +75,8 @@ namespace Service.DataShaping
             return shapedData;
         }
 
-        private ExpandoObject FetchDataForEntity(T entity, IEnumerable<PropertyInfo>
-    requiredProperties)
+        private ExpandoObject FetchDataForEntity(T entity, 
+            IEnumerable<PropertyInfo> requiredProperties)
         {
             var shapedObject = new ExpandoObject();
             foreach (var property in requiredProperties)
