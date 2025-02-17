@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Shared.RequestFeatures
 {
-    public class PagedList<T> : List<T>
+    public class PagedList<T> : List<T> // Paged list is a List == can use .Add(..), .AddRange(..)..+ the MetaData Object.
     {
         public MetaData MetaData { get; set; }
         // count == number of items
@@ -24,7 +24,7 @@ namespace Shared.RequestFeatures
         }
 
         public static PagedList<T> ToPagedList(IEnumerable<T> source, int pageNumber, int
-    pageSize)
+            pageSize)
         {
             var count = source.Count();
             var items = source.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();

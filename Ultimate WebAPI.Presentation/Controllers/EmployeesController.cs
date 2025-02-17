@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Service.Contracts;
 using Shared.DataTransferObjects;
 using Shared.RequestFeatures;
@@ -7,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 
@@ -23,9 +25,11 @@ namespace CompanyEmployees.Presentation.Controllers
         public async Task<IActionResult> GetEmployeesForCompany(Guid companyId,
             [FromQuery] EmployeeParameters employeeParameters)
         {
-            var employees = await _service.EmployeeService.GetEmployeesAsync(companyId,
-              employeeParameters, trackChanges: false); 
-            return Ok(employees); // without await => will return Task
+            var pagedResult = await _service.EmployeeService.GetEmployeesAsync(companyId,
+                   employeeParameters, trackChanges: false);
+            Response.Headers.Add("X-Pagination",
+                JsonSerializer.Serialize(pagedResult.metaData));
+            return Ok(pagedResult.employees); // without await => will return Task
         }                         // with await => will return IEnumrable<Employee>
 
         [HttpGet("{id:guid}", Name = "GetEmployeeForCompany")]
@@ -36,7 +40,8 @@ namespace CompanyEmployees.Presentation.Controllers
         }
 
         [HttpPost] //default for parms => 
-        public async Task<IActionResult> CreateEmployeeForCompanyAsync(Guid companyId, [FromBody] EmployeeForCreationDto employee)
+        public async Task<IActionResult> CreateEmployeeForCompanyAsync(Guid companyId, 
+            [FromBody] EmployeeForCreationDto employee)
         {
             if (employee is null)
                 return BadRequest("EmployeeForCreationDto object is null");

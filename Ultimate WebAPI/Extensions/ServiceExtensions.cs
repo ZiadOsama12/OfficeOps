@@ -15,8 +15,10 @@ namespace Ultimate_WebAPI.Extensions
                  options.AddPolicy("CorsPolicy", builder =>
                 builder.AllowAnyOrigin()
                 .AllowAnyMethod()
-                .AllowAnyHeader());
-             });
+                .AllowAnyHeader()
+                .WithExposedHeaders("X-Pagination"));
+
+    });
         public static void ConfigureIISIntegration(this IServiceCollection services) =>
             services.Configure<IISOptions>(options =>
                 {
@@ -33,7 +35,9 @@ namespace Ultimate_WebAPI.Extensions
         public static void ConfigureSqlContext(this IServiceCollection services,
             IConfiguration configuration) =>
             services.AddDbContext<RepositoryContext>(opts =>
-            opts.UseSqlServer(configuration.GetConnectionString("sqlConnection")));
+            opts.UseSqlServer(configuration.GetConnectionString("sqlConnection"))
+                .EnableSensitiveDataLogging()); // options.EnableSensitiveDataLogging(); // for logging params in the queries. Remove it in production.
+
 
         public static IMvcBuilder AddCustomCSVFormatter(this IMvcBuilder builder) =>
             builder.AddMvcOptions(config => config.OutputFormatters.Add(new
