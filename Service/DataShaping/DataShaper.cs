@@ -1,4 +1,5 @@
 ﻿using Contracts;
+using Entities.Models;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -18,19 +19,18 @@ namespace Service.DataShaping
                 BindingFlags.Instance);
         }
 
-        public IEnumerable<ExpandoObject> ShapeData(IEnumerable<T> entities, string
-        fieldsString)
+        public IEnumerable<Entity> ShapeData(IEnumerable<T> entities, string fieldsString)
         {
             var requiredProperties = GetRequiredProperties(fieldsString);
 
             return FetchData(entities, requiredProperties);
         }
 
-        public ExpandoObject ShapeData(T entity, string fieldsString)
+        public Entity ShapeData(T Entity, string fieldsString)
         {
             var requiredProperties = GetRequiredProperties(fieldsString);
 
-            return FetchDataForEntity(entity, requiredProperties);
+            return FetchDataForEntity(Entity, requiredProperties);
         }
 
         private IEnumerable<PropertyInfo> GetRequiredProperties(string fieldsString)
@@ -44,8 +44,7 @@ namespace Service.DataShaping
                 foreach (var field in fields)
                 {
                     var property = Properties
-                        .FirstOrDefault(pi => pi.Name.Equals(field.Trim(), 
-                            StringComparison.InvariantCultureIgnoreCase));
+                        .FirstOrDefault(pi => pi.Name.Equals(field.Trim(), StringComparison.InvariantCultureIgnoreCase));
 
                     if (property == null)
                         continue;
@@ -61,27 +60,26 @@ namespace Service.DataShaping
             return requiredProperties;
         }
 
-        private IEnumerable<ExpandoObject> FetchData(IEnumerable<T> entities, // multiple rows
-    IEnumerable<PropertyInfo> requiredProperties)
+        private IEnumerable<Entity> FetchData(IEnumerable<T> entities, IEnumerable<PropertyInfo> requiredProperties)
         {
-            var shapedData = new List<ExpandoObject>();
+            var shapedData = new List<Entity>();
 
-            foreach (var entity in entities) // for each entity..make some object and add the properties "dynmaically" you need
+            foreach (var Entity in entities)
             {
-                var shapedObject = FetchDataForEntity(entity, requiredProperties);
+                var shapedObject = FetchDataForEntity(Entity, requiredProperties);
                 shapedData.Add(shapedObject);
             }
 
             return shapedData;
         }
 
-        private ExpandoObject FetchDataForEntity(T entity, 
-            IEnumerable<PropertyInfo> requiredProperties)
+        private Entity FetchDataForEntity(T Entity, IEnumerable<PropertyInfo> requiredProperties)
         {
-            var shapedObject = new ExpandoObject();
+            var shapedObject = new Entity();
+
             foreach (var property in requiredProperties)
             {
-                var objectPropertyValue = property.GetValue(entity);
+                var objectPropertyValue = property.GetValue(Entity);
                 shapedObject.TryAdd(property.Name, objectPropertyValue);
             }
 
