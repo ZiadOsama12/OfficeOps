@@ -36,6 +36,8 @@ public class Program
         builder.Services.AddAutoMapper(typeof(Program));
         builder.Services.AddCustomMediaTypes();
         builder.Services.ConfigureVersioning();
+        builder.Services.ConfigureResponseCaching(); // Adding Cache Store
+        builder.Services.ConfigureHttpCacheHeaders();
 
         builder.Services.Configure<ApiBehaviorOptions>(options =>
         {
@@ -51,7 +53,11 @@ public class Program
             config.RespectBrowserAcceptHeader = true;
             config.ReturnHttpNotAcceptable = true;
             config.InputFormatters.Insert(0, GetJsonPatchInputFormatter()); //The default input formatters might not support JSON Patch, so we explicitly insert it at index 0, ensuring it takes priority.
-           
+            config.CacheProfiles.Add("120SecondsDuration", new CacheProfile
+            {
+                Duration = 120
+            });
+
         }).AddXmlDataContractSerializerFormatters().AddCustomCSVFormatter()
         .AddApplicationPart(typeof(CompanyEmployees.Presentation.AssemblyReference).Assembly);
 
@@ -77,6 +83,8 @@ public class Program
         });
 
         app.UseCors("CorsPolicy"); // added
+        app.UseResponseCaching(); // for cache store
+        app.UseHttpCacheHeaders(); // better method for caching
 
 
         app.UseAuthorization();

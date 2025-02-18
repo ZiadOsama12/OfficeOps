@@ -19,14 +19,14 @@ namespace Service.DataShaping
                 BindingFlags.Instance);
         }
 
-        public IEnumerable<Entity> ShapeData(IEnumerable<T> entities, string fieldsString)
+        public IEnumerable<ExpandoObject> ShapeData(IEnumerable<T> entities, string fieldsString)
         {
             var requiredProperties = GetRequiredProperties(fieldsString);
 
             return FetchData(entities, requiredProperties);
         }
 
-        public Entity ShapeData(T Entity, string fieldsString)
+        public ExpandoObject ShapeData(T Entity, string fieldsString)
         {
             var requiredProperties = GetRequiredProperties(fieldsString);
 
@@ -60,9 +60,9 @@ namespace Service.DataShaping
             return requiredProperties;
         }
 
-        private IEnumerable<Entity> FetchData(IEnumerable<T> entities, IEnumerable<PropertyInfo> requiredProperties)
+        private IEnumerable<ExpandoObject> FetchData(IEnumerable<T> entities, IEnumerable<PropertyInfo> requiredProperties)
         {
-            var shapedData = new List<Entity>();
+            var shapedData = new List<ExpandoObject>();
 
             foreach (var Entity in entities)
             {
@@ -73,9 +73,9 @@ namespace Service.DataShaping
             return shapedData;
         }
 
-        private Entity FetchDataForEntity(T Entity, IEnumerable<PropertyInfo> requiredProperties)
+        private ExpandoObject FetchDataForEntity(T Entity, IEnumerable<PropertyInfo> requiredProperties)
         {
-            var shapedObject = new Entity();
+            var shapedObject = new ExpandoObject();
 
             foreach (var property in requiredProperties)
             {
