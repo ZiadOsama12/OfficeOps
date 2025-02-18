@@ -1,3 +1,4 @@
+using AspNetCoreRateLimit;
 using CompanyEmployees.Presentation.ActionFilters;
 using Contracts;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -36,8 +37,14 @@ public class Program
         builder.Services.AddAutoMapper(typeof(Program));
         builder.Services.AddCustomMediaTypes();
         builder.Services.ConfigureVersioning();
+
         builder.Services.ConfigureResponseCaching(); // Adding Cache Store
         builder.Services.ConfigureHttpCacheHeaders();
+
+        builder.Services.AddMemoryCache(); // for rate limiting.
+        builder.Services.ConfigureRateLimitingOptions();
+        builder.Services.AddHttpContextAccessor();
+
 
         builder.Services.Configure<ApiBehaviorOptions>(options =>
         {
@@ -82,6 +89,7 @@ public class Program
             ForwardedHeaders = ForwardedHeaders.All
         });
 
+        app.UseIpRateLimiting();
         app.UseCors("CorsPolicy"); // added
         app.UseResponseCaching(); // for cache store
         app.UseHttpCacheHeaders(); // better method for caching
