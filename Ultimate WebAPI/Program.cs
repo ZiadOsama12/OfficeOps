@@ -45,6 +45,10 @@ public class Program
         builder.Services.ConfigureRateLimitingOptions();
         builder.Services.AddHttpContextAccessor();
 
+        builder.Services.AddAuthentication(); // This Group => For Auth and Identity
+        builder.Services.ConfigureIdentity();
+
+        builder.Services.ConfigureJWT(builder.Configuration);
 
         builder.Services.Configure<ApiBehaviorOptions>(options =>
         {
@@ -94,7 +98,7 @@ public class Program
         app.UseResponseCaching(); // for cache store
         app.UseHttpCacheHeaders(); // better method for caching
 
-
+        app.UseAuthentication(); // added for auth.
         app.UseAuthorization();
 
         app.Use(async (context, next) =>

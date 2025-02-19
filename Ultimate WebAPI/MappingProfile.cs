@@ -21,6 +21,7 @@ namespace Ultimate_WebAPI
             CreateMap<EmployeeForUpdateDto, Employee>().ReverseMap();
             CreateMap<CompanyForUpdateDto, Company>();
 
+            CreateMap<UserForRegistrationDto, User>();    
 
         }
     }

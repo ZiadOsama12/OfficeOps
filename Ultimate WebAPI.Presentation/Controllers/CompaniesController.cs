@@ -2,6 +2,7 @@
 using CompanyEmployees.Presentation.ActionFilters;
 using CompanyEmployees.Presentation.ModelBinders;
 using Marvin.Cache.Headers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,6 +36,8 @@ namespace CompanyEmployees.Presentation.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Manager")] // zsaiyn01 with same password
+        //[Authorize]
         public async Task<IActionResult> GetCompanies()
         {
             //throw new Exception("Exception");
