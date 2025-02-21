@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Entities.ConfigurationModels;
+using Microsoft.OpenApi.Models;
 
 namespace Ultimate_WebAPI.Extensions
 {
@@ -63,7 +65,7 @@ namespace Ultimate_WebAPI.Extensions
                 if (systemTextJsonOutputFormatter != null)
                 {
                     systemTextJsonOutputFormatter.SupportedMediaTypes
-                    .Add("application/vnd.codemaze.hateoas+json");
+                    .Add("application/vnd.ziad.hateoas+json");
                 }
                 var xmlOutputFormatter = config.OutputFormatters
                 .OfType<XmlDataContractSerializerOutputFormatter>()?
@@ -71,7 +73,7 @@ namespace Ultimate_WebAPI.Extensions
                 if (xmlOutputFormatter != null)
                 {
                     xmlOutputFormatter.SupportedMediaTypes
-                    .Add("application/vnd.codemaze.hateoas+xml");
+                    .Add("application/vnd.ziad.hateoas+xml");
                 }
             });
         }
@@ -112,9 +114,9 @@ namespace Ultimate_WebAPI.Extensions
                 {
                     new RateLimitRule
                     {
-                    Endpoint = "*",
-                    Limit = 10000,
-                    Period = "5m"
+                        Endpoint = "*",
+                        Limit = 10000,
+                        Period = "5m"
                     }
                 };
             services.Configure<IpRateLimitOptions>(opt =>
@@ -143,9 +145,14 @@ namespace Ultimate_WebAPI.Extensions
         public static void ConfigureJWT(this IServiceCollection services, IConfiguration
             configuration)
         {
-            var jwtSettings = configuration.GetSection("JwtSettings");
+            //var jwtSettings = configuration.GetSection("JwtSettings");
+
+            var jwtConfiguration = new JwtConfiguration();
+            configuration.Bind(jwtConfiguration.Section, jwtConfiguration);
+
             //var secretKey = Environment.GetEnvironmentVariable("SECRET");
-            var secretKey = jwtSettings["SECRET"];
+            //var secretKey = jwtSettings["SECRET"];
+            var secretKey = jwtConfiguration.Secret;
 
             services.AddAuthentication(opt =>
             {
@@ -161,11 +168,71 @@ namespace Ultimate_WebAPI.Extensions
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
 
-                    ValidIssuer = jwtSettings["validIssuer"],
-                    ValidAudience = jwtSettings["validAudience"],
+                    ValidIssuer = jwtConfiguration.ValidIssuer,
+                    ValidAudience = jwtConfiguration.ValidAudience,
                     IssuerSigningKey = new
                             SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
                 };
+            });
+        }
+
+        public static void AddJwtConfiguration(this IServiceCollection services,
+            IConfiguration configuration) =>
+            services.Configure<JwtConfiguration>(configuration.GetSection("JwtSettings"));
+
+        public static void ConfigureSwagger(this IServiceCollection services)
+        {
+            services.AddSwaggerGen(s =>
+            {
+                s.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "Ultimate API",
+                    Version = "v1",
+                    Description = "CompanyEmployees API by Ziad Osama",
+                    //TermsOfService = new Uri("https://example.com/terms"),
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Ziad Osama",
+                        Email = "ziadosama9595@gmail.com",
+                        //Url = new Uri("https://twitter.com/ziad"),
+                    },
+                    License = new OpenApiLicense
+                    {
+                        Name = "CompanyEmployees API LICX",
+                        Url = new Uri("https://example.com/license"),
+                    }
+                });
+                s.SwaggerDoc("v2", new OpenApiInfo
+                {
+                    Title = "Ultimate API",
+                    Version = "v2"
+                });
+                var xmlFile = $"{typeof(CompanyEmployees.Presentation.AssemblyReference).Assembly.GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                s.IncludeXmlComments(xmlPath);
+                s.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Place to add JWT with Bearer",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+                s.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            },
+                            Name = "Bearer",
+                        },
+                        new List<string>()
+                    }
+                });
             });
         }
     }

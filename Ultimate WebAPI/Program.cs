@@ -49,6 +49,9 @@ public class Program
         builder.Services.ConfigureIdentity();
 
         builder.Services.ConfigureJWT(builder.Configuration);
+        builder.Services.AddJwtConfiguration(builder.Configuration); // for Options Pattern
+
+        builder.Services.ConfigureSwagger();
 
         builder.Services.Configure<ApiBehaviorOptions>(options =>
         {
@@ -100,6 +103,13 @@ public class Program
 
         app.UseAuthentication(); // added for auth.
         app.UseAuthorization();
+
+        app.UseSwagger(); // https://localhost:5001/swagger/index.html
+        app.UseSwaggerUI(s =>
+        {
+            s.SwaggerEndpoint("/swagger/v1/swagger.json", "Ultimate API v1");
+            s.SwaggerEndpoint("/swagger/v2/swagger.json", "Ultimate API v2");
+        });
 
         app.Use(async (context, next) =>
         {

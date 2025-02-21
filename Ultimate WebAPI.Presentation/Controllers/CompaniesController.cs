@@ -20,6 +20,7 @@ namespace CompanyEmployees.Presentation.Controllers
     [Route("api/companies")]
     [ApiController]
     [ApiVersion("1.0")]
+    [ApiExplorerSettings(GroupName = "v1")]
 
     public class CompaniesController : ControllerBase
     {
@@ -34,7 +35,10 @@ namespace CompanyEmployees.Presentation.Controllers
             Response.Headers.Add("Allow", "GET, OPTIONS, POST");
             return Ok();
         }
-
+        /// <summary>
+        /// Get list of companies
+        /// </summary>
+        /// <returns>The Company List</returns>
         [HttpGet]
         [Authorize(Roles = "Manager")] // zsaiyn01 with same password
         //[Authorize]
@@ -54,7 +58,17 @@ namespace CompanyEmployees.Presentation.Controllers
             var company = await _service.CompanyService.GetCompanyAsync(id, trackChanges: false);
             return Ok(company);
         }
-
+        /// <summary> 
+        /// Creates a newly created company 
+        /// </summary> 
+        /// <param name="company"></param> 
+        /// <returns>A newly created company</returns> 
+        /// <response code="201">Returns the newly created item</response> 
+        /// <response code="400">If the item is null</response> 
+        /// <response code="422">If the model is invalid</response>
+        [ProducesResponseType(201)] 
+        [ProducesResponseType(400)]
+        [ProducesResponseType(422)]
         [HttpPost]
         [ServiceFilter(typeof(ValidationFilterAttribute))]
         public async Task<IActionResult> CreateCompany([FromBody] CompanyForCreationDto company)

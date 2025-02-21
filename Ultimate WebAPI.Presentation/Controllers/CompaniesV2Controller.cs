@@ -13,6 +13,8 @@ namespace CompanyEmployees.Presentation.Controllers
     [Route("api/companies")]
     [ApiController]
     [ApiVersion("2.0", Deprecated = true)]
+    [ApiExplorerSettings(GroupName = "v2")]
+
     public class CompaniesV2Controller : ControllerBase
     {
         private readonly IServiceManager _service;
